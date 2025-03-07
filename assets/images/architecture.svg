@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+        </marker>
+    </defs>
+    
+    <!-- 前端部分 -->
+    <g transform="translate(50,50)">
+        <rect x="0" y="0" width="200" height="150" rx="10" fill="#409EFF" opacity="0.8"/>
+        <text x="100" y="40" text-anchor="middle" fill="white" font-size="20">前端应用层</text>
+        <text x="100" y="80" text-anchor="middle" fill="white" font-size="14">Vue 3 + TypeScript</text>
+        <text x="100" y="100" text-anchor="middle" fill="white" font-size="14">Element Plus</text>
+        <text x="100" y="120" text-anchor="middle" fill="white" font-size="14">WebSocket</text>
+    </g>
+
+    <!-- Nginx层 -->
+    <g transform="translate(50,250)">
+        <rect x="0" y="0" width="200" height="100" rx="10" fill="#67C23A" opacity="0.8"/>
+        <text x="100" y="40" text-anchor="middle" fill="white" font-size="20">Nginx 服务器</text>
+        <text x="100" y="70" text-anchor="middle" fill="white" font-size="14">反向代理 / 负载均衡</text>
+    </g>
+
+    <!-- 后端服务 -->
+    <g transform="translate(350,200)">
+        <rect x="0" y="0" width="200" height="200" rx="10" fill="#E6A23C" opacity="0.8"/>
+        <text x="100" y="40" text-anchor="middle" fill="white" font-size="20">后端服务层</text>
+        <text x="100" y="80" text-anchor="middle" fill="white" font-size="14">FastAPI</text>
+        <text x="100" y="100" text-anchor="middle" fill="white" font-size="14">JWT认证</text>
+        <text x="100" y="120" text-anchor="middle" fill="white" font-size="14">WebSocket服务</text>
+        <text x="100" y="140" text-anchor="middle" fill="white" font-size="14">业务逻辑处理</text>
+    </g>
+
+    <!-- AI服务 -->
+    <g transform="translate(650,50)">
+        <rect x="0" y="0" width="100" height="100" rx="10" fill="#F56C6C" opacity="0.8"/>
+        <text x="50" y="40" text-anchor="middle" fill="white" font-size="16">OpenAI</text>
+        <text x="50" y="70" text-anchor="middle" fill="white" font-size="14">GPT API</text>
+    </g>
+
+    <!-- 数据存储 -->
+    <g transform="translate(650,200)">
+        <rect x="0" y="0" width="100" height="80" rx="10" fill="#909399" opacity="0.8"/>
+        <text x="50" y="35" text-anchor="middle" fill="white" font-size="16">Redis</text>
+        <text x="50" y="60" text-anchor="middle" fill="white" font-size="14">缓存层</text>
+    </g>
+
+    <g transform="translate(650,350)">
+        <rect x="0" y="0" width="100" height="80" rx="10" fill="#909399" opacity="0.8"/>
+        <text x="50" y="35" text-anchor="middle" fill="white" font-size="16">MongoDB</text>
+        <text x="50" y="60" text-anchor="middle" fill="white" font-size="14">数据持久化</text>
+    </g>
+
+    <!-- 连接线 -->
+    <g stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrow)">
+        <!-- 前端到Nginx -->
+        <path d="M 150,200 L 150,250"/>
+        <!-- Nginx到后端 -->
+        <path d="M 250,300 L 350,300"/>
+        <!-- 后端到AI -->
+        <path d="M 550,250 L 650,100"/>
+        <!-- 后端到Redis -->
+        <path d="M 550,300 L 650,240"/>
+        <!-- 后端到MongoDB -->
+        <path d="M 550,350 L 650,390"/>
+    </g>
+
+    <!-- 图例 -->
+    <g transform="translate(50,500)">
+        <rect x="0" y="0" width="700" height="60" rx="5" fill="#f5f7fa"/>
+        <text x="350" y="35" text-anchor="middle" font-size="16">系统架构图</text>
+    </g>
+</svg>

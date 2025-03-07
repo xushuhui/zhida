@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景 -->
+    <rect x="0" y="0" width="800" height="600" fill="#f5f7fa"/>
+    
+    <!-- 欢迎区域 -->
+    <g transform="translate(50,30)">
+        <text x="0" y="40" font-size="28" fill="#303133">
+            <tspan>👋 欢迎使用智能客服系统</tspan>
+        </text>
+        <text x="0" y="70" font-size="16" fill="#909399">让AI为您提供7x24小时的智能服务</text>
+    </g>
+    
+    <!-- 统计卡片区域 -->
+    <g transform="translate(50,120)">
+        <!-- 今日对话数 -->
+        <g transform="translate(0,0)">
+            <rect width="160" height="120" rx="8" fill="white" 
+                  style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
+            <text x="20" y="30" font-size="14" fill="#909399">今日对话数</text>
+            <text x="20" y="70" font-size="28" fill="#303133">128</text>
+            <text x="80" y="70" font-size="14" fill="#67C23A">↑15%</text>
+        </g>
+        
+        <!-- 消息数量 -->
+        <g transform="translate(180,0)">
+            <rect width="160" height="120" rx="8" fill="white"
+                  style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
+            <text x="20" y="30" font-size="14" fill="#909399">消息数量</text>
+            <text x="20" y="70" font-size="28" fill="#303133">1,024</text>
+            <text x="100" y="70" font-size="14" fill="#67C23A">↑8%</text>
+        </g>
+        
+        <!-- 平均响应时间 -->
+        <g transform="translate(360,0)">
+            <rect width="160" height="120" rx="8" fill="white"
+                  style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
+            <text x="20" y="30" font-size="14" fill="#909399">平均响应时间</text>
+            <text x="20" y="70" font-size="28" fill="#303133">1.5s</text>
+            <text x="80" y="70" font-size="14" fill="#67C23A">↓12%</text>
+        </g>
+        
+        <!-- 满意度 -->
+        <g transform="translate(540,0)">
+            <rect width="160" height="120" rx="8" fill="white"
+                  style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
+            <text x="20" y="30" font-size="14" fill="#909399">满意度</text>
+            <text x="20" y="70" font-size="28" fill="#303133">98%</text>
+            <text x="80" y="70" font-size="14" fill="#67C23A">↑2%</text>
+        </g>
+    </g>
+    
+    <!-- 功能卡片区域 -->
+    <g transform="translate(50,280)">
+        <!-- 开始对话 -->
+        <g transform="translate(0,0)">
+            <rect width="220" height="180" rx="8" fill="white"
+                  style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
+            <circle cx="110" cy="60" r="30" fill="#409EFF" opacity="0.1"/>
+            <text x="110" y="70" text-anchor="middle" font-size="24" fill="#409EFF">💬</text>
+            <text x="110" y="120" text-anchor="middle" font-size="18" fill="#303133">开始对话</text>
+            <text x="110" y="150" text-anchor="middle" font-size="14" fill="#909399">与AI助手进行实时对话</text>
+        </g>
+        
+        <!-- 历史记录 -->
+        <g transform="translate(240,0)">
+            <rect width="220" height="180" rx="8" fill="white"
+                  style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
+            <circle cx="110" cy="60" r="30" fill="#67C23A" opacity="0.1"/>
+            <text x="110" y="70" text-anchor="middle" font-size="24" fill="#67C23A">📊</text>
+            <text x="110" y="120" text-anchor="middle" font-size="18" fill="#303133">历史记录</text>
+            <text x="110" y="150" text-anchor="middle" font-size="14" fill="#909399">查看历史对话记录</text>
+        </g>
+        
+        <!-- 系统设置 -->
+        <g transform="translate(480,0)">
+            <rect width="220" height="180" rx="8" fill="white"
+                  style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
+            <circle cx="110" cy="60" r="30" fill="#E6A23C" opacity="0.1"/>
+            <text x="110" y="70" text-anchor="middle" font-size="24" fill="#E6A23C">⚙️</text>
+            <text x="110" y="120" text-anchor="middle" font-size="18" fill="#303133">系统设置</text>
+            <text x="110" y="150" text-anchor="middle" font-size="14" fill="#909399">自定义系统配置</text>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景渐变 -->
+    <defs>
+        <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#409EFF;stop-opacity:0.1" />
+            <stop offset="100%" style="stop-color:#67C23A;stop-opacity:0.1" />
+        </linearGradient>
+    </defs>
+    
+    <!-- 背景 -->
+    <rect x="0" y="0" width="800" height="600" fill="url(#bg-gradient)"/>
+    
+    <!-- 登录卡片 -->
+    <g transform="translate(250,100)">
+        <!-- 卡片背景 -->
+        <rect x="0" y="0" width="300" height="400" rx="15" fill="white" 
+              style="filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1))"/>
+        
+        <!-- 登录标题 -->
+        <g transform="translate(100,40)">
+            <circle cx="50" cy="30" r="25" fill="#409EFF"/>
+            <text x="50" y="38" text-anchor="middle" fill="white" font-size="20">AI</text>
+            <text x="50" y="80" text-anchor="middle" font-size="20" fill="#303133">智能客服系统</text>
+            <text x="50" y="100" text-anchor="middle" font-size="14" fill="#909399">欢迎回来！请登录您的账号</text>
+        </g>
+        
+        <!-- 登录表单 -->
+        <g transform="translate(30,160)">
+            <!-- 用户名输入框 -->
+            <rect x="0" y="0" width="240" height="40" rx="4" fill="#f5f7fa"/>
+            <text x="20" y="-10" font-size="14" fill="#606266">用户名</text>
+            <text x="20" y="25" font-size="14" fill="#909399">请输入用户名</text>
+            
+            <!-- 密码输入框 -->
+            <rect x="0" y="70" width="240" height="40" rx="4" fill="#f5f7fa"/>
+            <text x="20" y="60" font-size="14" fill="#606266">密码</text>
+            <text x="20" y="95" font-size="14" fill="#909399">请输入密码</text>
+            
+            <!-- 记住我选项 -->
+            <rect x="0" y="130" width="16" height="16" rx="2" stroke="#dcdfe6" fill="white"/>
+            <text x="26" y="143" font-size="14" fill="#606266">记住我</text>
+            
+            <!-- 登录按钮 -->
+            <rect x="0" y="170" width="240" height="40" rx="4" fill="#409EFF"/>
+            <text x="120" y="195" text-anchor="middle" font-size="14" fill="white">登录</text>
+        </g>
+    </g>
+</svg>

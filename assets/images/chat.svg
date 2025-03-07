@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景 -->
+    <rect x="0" y="0" width="800" height="600" fill="#f5f7fa"/>
+    
+    <!-- 侧边栏 -->
+    <g transform="translate(0,0)">
+        <rect width="200" height="600" fill="white"/>
+        
+        <!-- 会话列表标题 -->
+        <text x="20" y="40" font-size="16" fill="#303133">会话历史</text>
+        
+        <!-- 会话列表 -->
+        <g transform="translate(10,60)">
+            <!-- 活跃会话 -->
+            <rect width="180" height="50" rx="4" fill="#ecf5ff"/>
+            <text x="20" y="30" font-size="14" fill="#409EFF">会话 1</text>
+            
+            <!-- 其他会话 -->
+            <g transform="translate(0,60)">
+                <rect width="180" height="50" rx="4" fill="white"/>
+                <text x="20" y="30" font-size="14" fill="#606266">会话 2</text>
+            </g>
+            
+            <g transform="translate(0,120)">
+                <rect width="180" height="50" rx="4" fill="white"/>
+                <text x="20" y="30" font-size="14" fill="#606266">会话 3</text>
+            </g>
+        </g>
+        
+        <!-- 新建会话按钮 -->
+        <g transform="translate(10,500)">
+            <rect width="180" height="40" rx="4" fill="#409EFF"/>
+            <text x="90" y="25" text-anchor="middle" font-size="14" fill="white">新建会话</text>
+        </g>
+    </g>
+    
+    <!-- 主聊天区域 -->
+    <g transform="translate(200,0)">
+        <rect width="600" height="600" fill="white"/>
+        
+        <!-- 消息列表 -->
+        <g transform="translate(20,20)">
+            <!-- 用户消息 -->
+            <g transform="translate(0,0)">
+                <circle cx="20" cy="20" r="20" fill="#409EFF"/>
+                <text x="20" y="25" text-anchor="middle" font-size="14" fill="white">U</text>
+                <rect x="50" y="0" width="400" height="40" rx="4" fill="#ecf5ff"/>
+                <text x="70" y="25" font-size="14" fill="#303133">你好，我需要帮助。</text>
+            </g>
+            
+            <!-- AI回复 -->
+            <g transform="translate(0,60)">
+                <circle cx="20" cy="20" r="20" fill="#67C23A"/>
+                <text x="20" y="25" text-anchor="middle" font-size="14" fill="white">AI</text>
+                <rect x="50" y="0" width="400" height="60" rx="4" fill="#f0f9eb"/>
+                <text x="70" y="25" font-size="14" fill="#303133">你好！我是AI助手，很高兴为您服务。</text>
+                <text x="70" y="45" font-size="14" fill="#303133">请告诉我您遇到了什么问题？</text>
+            </g>
+        </g>
+        
+        <!-- 输入区域 -->
+        <g transform="translate(20,500)">
+            <rect width="460" height="80" rx="4" fill="#f5f7fa"/>
+            <text x="20" y="40" font-size="14" fill="#909399">请输入您的问题...</text>
+            
+            <!-- 发送按钮 -->
+            <g transform="translate(480,20)">
+                <rect width="80" height="40" rx="4" fill="#409EFF"/>
+                <text x="40" y="25" text-anchor="middle" font-size="14" fill="white">发送</text>
+            </g>
+        </g>
+    </g>
+</svg>
