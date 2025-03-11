@@ -1,4 +1,5 @@
 # API Documentation
+
 ## Basic Information
 - Base Path: `/api/v1`
 - Authentication: Bearer Token
@@ -8,171 +9,205 @@
 ## Status Codes
 | Status Code | Description |
 |------------|-------------|
-| 200 | Request Successful |
+| 200 | Success |
 | 400 | Bad Request |
 | 401 | Unauthorized or Authentication Failed |
 | 403 | Forbidden |
 | 404 | Resource Not Found |
 | 500 | Internal Server Error |
+| 502 | Bad Gateway |
+| 503 | Service Unavailable |
 
 ## Authentication Endpoints
-### User Login
-- Path: `POST /login`
-- Request Body:
-  ```typescript
-  {
-    username: string  // Username
-    password: string  // Password
-  }
-  ```
-- Response:
-  ```typescript
-  {
-    access_token: string  // JWT Token
-    token_type: string    // Token type, always "bearer"
-  }
-  ```
-- Error Response:
-  ```typescript
-  {
-    detail: string  // Error details
-  }
-  ```
 
-### User Logout
-- Path: `POST /logout`
-- Headers: Requires valid Authorization Token
-- Response:
-  ```typescript
-  {
-    message: string  // "Successfully logged out"
-  }
-  ```
-
-## Chat Endpoints
-### Send Message
-- Path: `POST /chat`
-- Headers: Requires valid Authorization Token
-- Request Body:
-  ```typescript
-  {
-    message: string  // User message content
-  }
-  ```
-- Response:
-  ```typescript
-  {
-    response: string       // AI assistant's response
-    messages: Array<{     // All messages in current session
-      role: string        // Message role: 'user' or 'assistant'
-      content: string     // Message content
-      timestamp: string   // Timestamp in ISO 8601 format
-    }>
-  }
-  ```
-
-### Get Chat History
-- Path: `GET /chat/history`
-- Headers: Requires valid Authorization Token
-- Query Parameters:
-  ```typescript
-  {
-    page?: number      // Optional, page number, defaults to 1
-    pageSize?: number  // Optional, items per page, defaults to 20
-  }
-  ```
-- Response:
-  ```typescript
-  {
-    messages: Array<{
-      role: string      // Message role: 'user' or 'assistant'
-      content: string   // Message content
-      timestamp: string // Timestamp in ISO 8601 format
-    }>,
-    pagination: {
-      total: number     // Total records
-      page: number      // Current page
-      pageSize: number  // Items per page
-    }
-  }
-  ```
-
-## Statistics Endpoints
-### Get Chat Statistics
-- Path: `GET /stats/chat`
-- Headers: Requires valid Authorization Token
-- Response:
-  ```typescript
-  {
-    todayChats: number        // Chats today
-    totalChats: number        // Total chats
-    avgResponseTime: number   // Average response time (ms)
-    satisfactionRate: number  // Satisfaction rate (percentage)
-  }
-  ```
-
-### Get Message Statistics
-- Path: `GET /stats/messages`
-- Headers: Requires valid Authorization Token
-- Response:
-  ```typescript
-  {
-    todayMessages: number      // Messages today
-    totalMessages: number      // Total messages
-    avgMessagesPerChat: number // Average messages per chat
-  }
-  ```
-
-## WebSocket Interface
-### Real-time Message Push
-- Connection URL: `ws://[host]/ws/chat`
-- Authentication: Pass token as URL parameter
-  ```
-  ws://[host]/ws/chat?token=[access_token]
-  ```
-- Message Format:
-  ```typescript
-  // Send message
-  {
-    type: 'message'
-    content: string
-  }
-  // Receive message
-  {
-    type: 'message' | 'status'
-    data: {
-      role: string
-      content: string
-      timestamp: string
-    }
-  }
-  ```
-
-## Data Models
-### Message
-```typescript
-interface Message {
-  id: string           // Message ID
-  role: string         // Role: 'user' or 'assistant'
-  content: string      // Message content
-  timestamp: string    // Timestamp
-  sessionId: string    // Session ID
-  status: string       // Message status: 'sent', 'delivered', 'read'
+### Login
+```
+POST /auth/token
+Request:
+{
+    username: string
+    password: string
+}
+Response:
+{
+    access_token: string
+    token_type: string
 }
 ```
 
-### Chat Session
-```typescript
-interface ChatSession {
-  id: string           // Session ID
-  userId: string       // User ID
-  startTime: string    // Start time
-  lastMessageTime: string // Last message time
-  messageCount: number // Message count
+### Register
+```
+POST /auth/register
+Request:
+{
+    username: string
+    email: string
+    password: string
+}
+Response:
+{
+    id: number
+    username: string
+    email: string
+    role: string
+    status: string
+}
+```
+
+## Chat Endpoints
+
+### Send Message
+```
+POST /chat
+Request:
+{
+    message: string
+    session_id?: number
+    system_prompt?: string
+    temperature?: number
+    max_tokens?: number
+}
+Response:
+{
+    session_id: number
+    message: {
+        id: number
+        role: string
+        content: string
+        created_at: string
+        tokens: number
+    }
+    total_tokens: number
+}
+```
+
+### List Sessions
+```
+GET /chat/sessions
+Query Parameters:
+- skip: number (default: 0)
+- limit: number (default: 20)
+
+Response:
+Array<{
+    id: number
+    title: string
+    status: string
+    message_count: number
+    last_message_time: string
+    created_at: string
+    updated_at: string
+}>
+```
+
+### Get Session Messages
+```
+GET /chat/sessions/{session_id}/messages
+Query Parameters:
+- skip: number (default: 0)
+- limit: number (default: 50)
+
+Response:
+Array<{
+    id: number
+    role: string
+    content: string
+    created_at: string
+    tokens: number
+    status: string
+}>
+```
+
+## Statistics Endpoints
+
+### Get Daily Statistics
+```
+GET /statistics/daily
+Query Parameters:
+- start_date: string (YYYY-MM-DD)
+- end_date: string (YYYY-MM-DD)
+
+Response:
+Array<{
+    date: string
+    chat_count: number
+    message_count: number
+    avg_response_time: number
+    token_usage: number
+    error_count: number
+}>
+```
+
+### Get Total Statistics
+```
+GET /statistics/total
+Response:
+{
+    total_chats: number
+    total_messages: number
+    avg_response_time: number
+    total_tokens: number
+    total_errors: number
+}
+```
+
+## WebSocket Interface
+
+### Real-time Message Updates
+```
+WebSocket: /ws/chat/{session_id}
+
+Message Format:
+{
+    type: "message" | "typing" | "error"
+    data: {
+        id?: number
+        role?: string
+        content?: string
+        status?: string
+        error?: string
+    }
 }
 ```
 
 ## Rate Limiting
-- Login endpoint: 5 requests per minute per IP
-- Chat endpoint: 60 requests per minute per user
-- WebSocket connection: Maximum 3 concurrent connections per user
+- Authentication endpoints: 5 requests per minute per IP
+- Chat endpoints: 60 requests per minute per user
+- WebSocket connections: 5 concurrent connections per user
+
+## Error Codes
+
+### HTTP Status Codes
+| Status Code | Description | Handling Suggestion |
+|-------------|-------------|---------------------|
+| 400 | Bad Request | Check if the request parameters are correct |
+| 401 | Unauthorized | Check if the authentication information is correct and if the token has expired |
+| 403 | Forbidden | Confirm if the user's permission level meets the requirements |
+| 404 | Not Found | Check if the resource path is correct |
+| 429 | Too Many Requests | Reduce the request frequency and check if it meets the rate limiting rules |
+| 500 | Internal Server Error | Check the server logs to locate the specific error |
+| 502 | Bad Gateway | Check if the service is running normally and if the network connection is normal |
+| 503 | Service Unavailable | Check the server load and confirm if the service needs to be scaled up |
+
+### Business Error Codes
+| Error Code | Description | Handling Suggestion |
+|------------|-------------|---------------------|
+| AUTH001 | Incorrect username or password | Prompt the user to check the input information |
+| AUTH002 | Token expired | Guide the user to log in again |
+| AUTH003 | Invalid token | Clear the local token cache and log in again |
+| CHAT001 | Failed to create session | Check user quota and system resources |
+| CHAT002 | Failed to send message | Check the network connection and API status |
+| CHAT003 | Failed to retrieve context | Check if the session ID is valid |
+| SYS001 | System maintenance | Wait for the system maintenance to complete |
+| SYS002 | Insufficient resources | Consider scaling up the system or optimizing resource usage |
+
+Error Response Format:
+```json
+{
+    "error": {
+        "code": "string",
+        "message": "string",
+        "details": "string"
+    }
+}
+```

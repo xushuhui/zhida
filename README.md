@@ -1,74 +1,10 @@
-# ZhiDa (Knowledge Answer)
-An intelligent Q&A system based on Vue 3 + FastAPI, providing GPT-based intelligent conversation services.
+# 知答 (Knowledge Answer)
 
-## Project Structure
-```
-.
-├── backend/             # Backend project directory
-│   ├── src/            # Source code
-│   ├── requirements.txt # Python dependencies
-│   └── run.py          # Startup script
-├── frontend/           # Frontend project directory
-│   ├── src/           # Source code
-│   └── package.json   # Project dependencies
-└── docs/              # Project documentation
-    ├── api.md             # API documentation
-    ├── deployment.md      # Deployment guide
-    ├── developer-guide.md # Development guide
-    ├── product.md         # Product introduction
-    ├── requirements.md    # Requirements documentation
-    └── technical-design.md # Technical design
-    └── testing.md         # Testing documentation
-```
+知答 is a modern customer service solution developed with Vue 3 and FastAPI, integrating OpenAI GPT models to provide intelligent conversation services.
 
-## Development Environment Requirements
-- Node.js >= 16
-- Python >= 3.8
-- OpenAI API Key
+## Features
 
-## Quick Start
-1. Start backend service:
-```bash
-# Enter backend directory
-cd backend
-# Install dependencies
-pip install -r requirements.txt
-# Configure environment variables
-cp .env.example .env
-# Edit .env file to set necessary environment variables
-# Start service
-python run.py
-```
-
-2. Start frontend service:
-```bash
-# Enter frontend directory
-cd frontend
-# Install dependencies
-npm install
-# Start development server
-npm run dev
-```
-
-After services start:
-- Frontend access: http://localhost:3000
-- Backend API: http://localhost:8000
-
-## Default User
-System preset administrator account:
-- Username: admin
-- Password: secret
-
-## Documentation
-- [Requirements](docs/requirements.md) - Detailed functional and non-functional requirements
-- [Technical Design](docs/technical-design.md) - System architecture and technical implementation details
-- [API Documentation](docs/api.md) - API specifications and usage instructions
-- [Deployment Guide](docs/deployment.md) - Environment configuration and deployment guide
-- [Developer Guide](docs/developer-guide.md) - Development process and specifications
-- [Testing Documentation](docs/testing.md) - Test plans and case descriptions
-- [Product Introduction](docs/product.md) - Product features and advantages
-
-## Currently Implemented Features
+### Currently Implemented
 - User Authentication
   - User login/logout
   - JWT Token authentication
@@ -84,41 +20,104 @@ System preset administrator account:
   - Response time statistics
   - Satisfaction statistics
 
-## Future Development Plans
+### Planned Features
 - User management functionality
 - Knowledge base management
 - Data analysis reports
 - System monitoring dashboard
 
-## Complete Directory Structure
+## Technology Stack
+
+### Frontend
+- Vue 3 + TypeScript
+- Element Plus
+- Vite
+- WebSocket
+- Jest + Cypress
+
+### Backend
+- Python FastAPI
+- MySQL
+- Redis
+- OpenAI API
+- pytest
+
+## Quick Start
+
+### Prerequisites
+- Node.js >= 16
+- Python >= 3.8
+- MySQL >= 8.0
+- Redis >= 6.2
+
+### Development Setup
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd zhida
+```
+
+2. Frontend setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+3. Backend setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# or
+.\\venv\\Scripts\\activate  # Windows
+pip install -r requirements.txt
+python run.py
+```
+
+## Documentation
+- [Requirements](docs/requirements.md) - Detailed functional and non-functional requirements
+- [Technical Design](docs/technical-design.md) - System architecture and technical implementation details
+- [API Documentation](docs/api.md) - API specifications and usage instructions
+- [Deployment Guide](docs/deployment.md) - Environment configuration and deployment guide
+- [Developer Guide](docs/developer-guide.md) - Development process and specifications
+- [Testing Documentation](docs/testing.md) - Test plans and case descriptions
+- [Database Design](docs/database.md) - Database structure and optimization
+- [Product Introduction](docs/product.md) - Product features and advantages
+
+## Directory Structure
 ```
 .
-├── backend/             # Backend project directory
-│   ├── src/            # Source code
-│   │   ├── api/       # API related code
-│   │   ├── config/    # Configuration files
-│   │   └── models/    # Data models
-│   ├── .env           # Environment variables
-│   ├── .env.example   # Environment variables example
-│   ├── requirements.txt # Python dependencies
-│   └── run.py         # Startup script
-├── frontend/           # Frontend project directory
+├── frontend/           # Frontend Vue application
 │   ├── src/           # Source code
-│   │   ├── api.ts     # API calls
-│   │   ├── views/     # Page components
-│   │   └── router/    # Route configuration
-│   ├── package.json   # Project dependencies
-│   └── vite.config.ts # Vite configuration
-├── docs/              # Project documentation
-│   ├── api.md             # API documentation
-│   ├── deployment.md      # Deployment guide
-│   ├── developer-guide.md # Development guide
-│   ├── product.md         # Product introduction
-│   ├── requirements.md    # Requirements documentation
-│   └── technical-design.md # Technical design
-│   └── testing.md         # Testing documentation
-├── assets/            # Resource files
-│   └── images/       # Image resources
-├── .gitignore        # Git ignore configuration
-└── README.md         # Project description
+│   ├── public/        # Static assets
+│   └── tests/         # Test files
+├── backend/           # Backend FastAPI application
+│   ├── src/          # Source code
+│   ├── tests/        # Test files
+│   └── migrations/   # Database migrations
+├── docs/             # Documentation
+│   ├── api.md        # API documentation
+│   ├── deployment.md # Deployment guide
+│   └── ...          # Other docs
+├── assets/           # Resource files
+│   └── images/      # Image resources
+├── docker-compose.yml # Docker configuration
+└── README.md         # Project overview
 ```
+
+## Contributing
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+- Documentation: https://docs.example.com
+- Issue Tracker: https://github.com/example/zhida/issues
+- Community Forum: https://forum.example.com
+- Email: support@example.com

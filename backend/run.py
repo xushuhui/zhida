@@ -1,14 +1,15 @@
 import uvicorn
-from dotenv import load_dotenv
-import os
-
-# 加载环境变量
-load_dotenv()
+from src.api.main import app
+from src.core.database import init_db
 
 if __name__ == "__main__":
+    # Initialize the database
+    init_db()
+    
+    # Start the FastAPI application
     uvicorn.run(
-        "src.api.main:app",
-        host=os.getenv("HOST", "0.0.0.0"),
-        port=int(os.getenv("PORT", 8000)),
+        app,
+        host="0.0.0.0",
+        port=8000,
         reload=True
     )

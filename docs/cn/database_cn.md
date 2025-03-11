@@ -1,113 +1,100 @@
 # 知答 - 数据库设计文档
 
 ## 1. 数据库选型
-使用MongoDB作为主数据库,Redis作为缓存数据库。选择理由:
-- MongoDB适合存储非结构化的对话数据
+使用MySQL作为主数据库，Redis作为缓存数据库。选择理由：
+- MySQL提供强大的事务支持和数据一致性保证
+- MySQL具有成熟的生态系统和优秀的性能
 - Redis提供高性能的缓存和实时数据支持
 - 两者都支持分布式部署
 
-## 2. 集合(表)设计
+## 2. 表设计
 
-### 2.1 users - 用户集合
-```javascript
-{
-  _id: ObjectId,              // 用户ID
-  username: String,           // 用户名
-  password: String,           // 加密密码
-  email: String,             // 邮箱
-  avatar: String,            // 头像URL
-  role: String,              // 角色: admin/user
-  status: String,            // 状态: active/disabled
-  created_at: DateTime,      // 创建时间
-  updated_at: DateTime,      // 更新时间
-  last_login: DateTime,      // 最后登录时间
-  preferences: {             // 用户偏好设置
-    language: String,        // 界面语言
-    theme: String,          // 主题设置
-    notification: Boolean   // 通知开关
-  }
-}
+### 2.1 users - 用户表
+```sql
+CREATE TABLE users (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    avatar VARCHAR(255),
+    role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+    status ENUM('active', 'disabled') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL,
+    preferences JSON
+);
 
-// 索引
-{
-  username: 1,        // 用户名唯一索引
-  email: 1,          // 邮箱唯一索引
-  created_at: -1     // 创建时间降序索引
-}
+-- 索引
+CREATE INDEX idx_users_created_at ON users(created_at DESC);
 ```
 
-### 2.2 sessions - 会话集合
-```javascript
-{
-  _id: ObjectId,              // 会话ID
-  user_id: ObjectId,         // 用户ID
-  title: String,             // 会话标题
-  status: String,            // 状态: active/archived
-  message_count: Number,     // 消息数量
-  last_message_time: DateTime, // 最后消息时间
-  created_at: DateTime,      // 创建时间
-  updated_at: DateTime,      // 更新时间
-  context: {                 // 会话上下文
-    system_prompt: String,   // 系统提示语
-    temperature: Number,     // GPT参数
-    max_tokens: Number      // 最大token数
-  }
-}
+### 2.2 sessions - 会话表
+```sql
+CREATE TABLE sessions (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    status ENUM('active', 'archived') NOT NULL DEFAULT 'active',
+    message_count INT UNSIGNED DEFAULT 0,
+    last_message_time TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    system_prompt TEXT,
+    temperature DECIMAL(3,2),
+    max_tokens INT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
-// 索引
-{
-  user_id: 1,              // 用户ID索引
-  created_at: -1,          // 创建时间降序索引
-  last_message_time: -1   // 最后消息时间降序索引
-}
+-- 索引
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX idx_sessions_created_at ON sessions(created_at DESC);
+CREATE INDEX idx_sessions_last_message ON sessions(last_message_time DESC);
 ```
 
-### 2.3 messages - 消息集合
-```javascript
-{
-  _id: ObjectId,              // 消息ID
-  session_id: ObjectId,      // 会话ID
-  user_id: ObjectId,         // 用户ID
-  role: String,              // 角色: user/assistant/system
-  content: String,           // 消息内容
-  tokens: Number,            // token数量
-  status: String,            // 状态: sent/delivered/error
-  created_at: DateTime,      // 创建时间
-  response_time: Number,     // 响应时间(ms)
-  metadata: {                // 元数据
-    client_info: String,     // 客户端信息
-    ip_address: String      // IP地址
-  }
-}
+### 2.3 messages - 消息表
+```sql
+CREATE TABLE messages (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    session_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    role ENUM('user', 'assistant', 'system') NOT NULL,
+    content TEXT NOT NULL,
+    tokens INT UNSIGNED,
+    status ENUM('sent', 'delivered', 'error') NOT NULL DEFAULT 'sent',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    response_time INT UNSIGNED,
+    client_info VARCHAR(255),
+    ip_address VARCHAR(45),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
-// 索引
-{
-  session_id: 1,           // 会话ID索引
-  user_id: 1,             // 用户ID索引
-  created_at: -1,         // 创建时间降序索引
-  role: 1                 // 角色索引
-}
+-- 索引
+CREATE INDEX idx_messages_session ON messages(session_id);
+CREATE INDEX idx_messages_user ON messages(user_id);
+CREATE INDEX idx_messages_created ON messages(created_at DESC);
+CREATE INDEX idx_messages_role ON messages(role);
 ```
 
-### 2.4 statistics - 统计集合
-```javascript
-{
-  _id: ObjectId,              // 统计ID
-  user_id: ObjectId,         // 用户ID
-  date: Date,                // 统计日期
-  chat_count: Number,        // 对话数量
-  message_count: Number,     // 消息数量
-  avg_response_time: Number, // 平均响应时间
-  token_usage: Number,       // token使用量
-  error_count: Number,       // 错误次数
-  created_at: DateTime       // 创建时间
-}
+### 2.4 statistics - 统计表
+```sql
+CREATE TABLE statistics (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    date DATE NOT NULL,
+    chat_count INT UNSIGNED DEFAULT 0,
+    message_count INT UNSIGNED DEFAULT 0,
+    avg_response_time FLOAT,
+    token_usage BIGINT UNSIGNED DEFAULT 0,
+    error_count INT UNSIGNED DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_date (user_id, date)
+);
 
-// 索引
-{
-  user_id: 1,              // 用户ID索引
-  date: -1                // 日期降序索引
-}
+-- 索引
+CREATE INDEX idx_statistics_date ON statistics(date DESC);
 ```
 
 ## 3. Redis 缓存设计
@@ -149,9 +136,9 @@ Expiry: 1分钟
 
 ## 4. 数据备份策略
 
-### 4.1 MongoDB备份
-- 每日全量备份
-- 实时操作日志备份
+### 4.1 MySQL备份
+- 每日全量备份 (mysqldump)
+- 开启二进制日志实现实时备份
 - 定期数据一致性检查
 - 备份文件加密存储
 
@@ -162,15 +149,15 @@ Expiry: 1分钟
 
 ## 5. 扩展性设计
 
-### 5.1 分片策略
-- 按用户ID分片
-- 会话数据本地化
-- 热数据优先迁移
+### 5.1 分区策略
+- 按用户ID范围分区
+- 按时间范围分区
+- 热数据优先处理
 
 ### 5.2 索引优化
 - 复合索引设计
-- 索引覆盖查询
-- 定期索引重建
+- 执行计划分析
+- 定期索引维护和统计信息更新
 
 ## 6. 数据安全
 

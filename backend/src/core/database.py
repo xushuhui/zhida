@@ -1,25 +1,17 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-import os
-from dotenv import load_dotenv
+from sqlalchemy.orm import sessionmaker
+from ..config import settings
 
-load_dotenv()
-
-MYSQL_USER = os.getenv("MYSQL_USER", "zhida_user")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "password")
-MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
-MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "zhida_db")
-
-SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     pool_pre_ping=True,
+    pool_recycle=3600,
     pool_size=5,
     max_overflow=10,
-    pool_recycle=1800,
+    echo=settings.DB_ECHO
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -1,202 +1,167 @@
-from datetime import datetime
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from ..models.chat import MessageCreate, SessionCreate, Message, Session, ChatResponse
-from ..routers.auth import get_current_user
+from typing import List
+from datetime import datetime
+from ..models.chat import ChatRequest, ChatResponse, Session, Message
+from ..utils.auth import get_current_active_user
 from ...core.database import get_db
-from ...models.base import User as UserModel
-from ...models.base import Session as SessionModel
-from ...models.base import Message as MessageModel
+from ...repositories import SessionRepository, MessageRepository, StatisticsRepository
 from ...services.openai_service import OpenAIService
+from ...config import settings
 
 router = APIRouter()
-openai_service = OpenAIService()
 
-@router.post("/sessions", response_model=Session)
-async def create_session(
-    session: SessionCreate,
-    current_user: UserModel = Depends(get_current_user),
+@router.post("/chat", response_model=ChatResponse)
+async def chat(
+    request: Request,
+    chat_request: ChatRequest,
+    current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    db_session = SessionModel(
+    session_repo = SessionRepository(db)
+    message_repo = MessageRepository(db)
+    stats_repo = StatisticsRepository(db)
+    
+    # Get or create session
+    session = None
+    if chat_request.session_id:
+        session = session_repo.get(chat_request.session_id)
+        if not session or session.user_id != current_user.id:
+            raise HTTPException(status_code=404, detail="Session not found")
+    
+    if not session:
+        # Create new session
+        session = session_repo.create({
+            "user_id": current_user.id,
+            "title": chat_request.message[:50] + "...",
+            "system_prompt": chat_request.system_prompt,
+            "temperature": chat_request.temperature or settings.TEMPERATURE,
+            "max_tokens": chat_request.max_tokens or settings.MAX_TOKENS
+        })
+    
+    # Create user message
+    start_time = datetime.utcnow()
+    user_message = message_repo.create_message(
+        session_id=session.id,
         user_id=current_user.id,
-        title=session.title or "New Chat",
-        status="active",
-        message_count=0,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-        context={}
+        role="user",
+        content=chat_request.message,
+        client_info=str(request.headers.get("user-agent")),
+        ip_address=request.client.host
     )
-    db.add(db_session)
-    db.commit()
-    db.refresh(db_session)
-    return db_session
+    
+    # Get chat completion from OpenAI
+    openai_service = OpenAIService()
+    system_prompt = chat_request.system_prompt or session.system_prompt
+    temperature = chat_request.temperature or session.temperature or settings.TEMPERATURE
+    max_tokens = chat_request.max_tokens or session.max_tokens or settings.MAX_TOKENS
+    
+    # Get chat history
+    history = message_repo.get_session_messages(session.id)
+    messages = [{"role": msg.role, "content": msg.content} for msg in history[-5:]]
+    if system_prompt:
+        messages.insert(0, {"role": "system", "content": system_prompt})
+    
+    try:
+        response = await openai_service.get_chat_completion(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        
+        # Create assistant message
+        end_time = datetime.utcnow()
+        response_time = int((end_time - start_time).total_seconds() * 1000)
+        
+        assistant_message = message_repo.create_message(
+            session_id=session.id,
+            user_id=current_user.id,
+            role="assistant",
+            content=response.content,
+            tokens=response.total_tokens,
+            response_time=response_time
+        )
+        
+        # Update session
+        session_repo.update(session.id, {
+            "message_count": session.message_count + 2,
+            "last_message_time": end_time
+        })
+        
+        # Update statistics
+        stats_repo.update_daily_stats(
+            user_id=current_user.id,
+            stats_date=datetime.utcnow().date(),
+            chat_count=1,
+            message_count=2,
+            avg_response_time=response_time,
+            token_usage=response.total_tokens
+        )
+        
+        return ChatResponse(
+            session_id=session.id,
+            message=assistant_message,
+            total_tokens=response.total_tokens
+        )
+        
+    except Exception as e:
+        # Update statistics for error
+        stats_repo.update_daily_stats(
+            user_id=current_user.id,
+            stats_date=datetime.utcnow().date(),
+            error_count=1
+        )
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessions", response_model=List[Session])
-async def get_sessions(
-    current_user: UserModel = Depends(get_current_user),
+async def list_sessions(
+    skip: int = 0,
+    limit: int = 20,
+    current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    return db.query(SessionModel).filter(
-        SessionModel.user_id == current_user.id
-    ).order_by(SessionModel.updated_at.desc()).all()
+    session_repo = SessionRepository(db)
+    return session_repo.get_user_sessions(current_user.id, skip, limit)
 
 @router.get("/sessions/{session_id}", response_model=Session)
 async def get_session(
     session_id: int,
-    current_user: UserModel = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    session = db.query(SessionModel).filter(
-        SessionModel.id == session_id,
-        SessionModel.user_id == current_user.id
-    ).first()
-    
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
-        )
+    session_repo = SessionRepository(db)
+    session = session_repo.get(session_id)
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Session not found")
     return session
 
-@router.post("/sessions/{session_id}/messages", response_model=ChatResponse)
-async def create_message(
-    session_id: int,
-    message: MessageCreate,
-    current_user: UserModel = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    session = db.query(SessionModel).filter(
-        SessionModel.id == session_id,
-        SessionModel.user_id == current_user.id
-    ).first()
-    
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
-        )
-
-    start_time = datetime.utcnow()
-    
-    # Create user message
-    user_message = MessageModel(
-        session_id=session_id,
-        user_id=current_user.id,
-        role="user",
-        content=message.content,
-        status="sent",
-        created_at=start_time
-    )
-    db.add(user_message)
-    
-    # Update session
-    session.message_count += 1
-    session.last_message_time = start_time
-    session.updated_at = start_time
-    
-    # Get conversation history
-    history = db.query(MessageModel).filter(
-        MessageModel.session_id == session_id
-    ).order_by(MessageModel.created_at.asc()).all()
-    
-    # Format messages for OpenAI
-    messages = [{"role": msg.role, "content": msg.content} for msg in history]
-    messages.append({"role": "user", "content": message.content})
-    
-    try:
-        # Get response from OpenAI
-        response = await openai_service.create_chat_completion(messages)
-        end_time = datetime.utcnow()
-        response_time = (end_time - start_time).total_seconds()
-        
-        # Create assistant message
-        assistant_message = MessageModel(
-            session_id=session_id,
-            user_id=current_user.id,
-            role="assistant",
-            content=response["content"],
-            status="sent",
-            created_at=end_time,
-            response_time=response_time,
-            tokens=response["tokens"]["total_tokens"],
-            metadata={
-                "prompt_tokens": response["tokens"]["prompt_tokens"],
-                "completion_tokens": response["tokens"]["completion_tokens"],
-                "model": openai_service.model
-            }
-        )
-        db.add(assistant_message)
-        
-        # Increment message count for assistant message
-        session.message_count += 1
-        
-        db.commit()
-        db.refresh(user_message)
-        db.refresh(assistant_message)
-        
-        return ChatResponse(
-            response=response["content"],
-            session_id=session_id,
-            messages=[user_message, assistant_message]
-        )
-        
-    except Exception as e:
-        # In case of error, still save the user message but mark it as error
-        user_message.status = "error"
-        db.commit()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-
 @router.get("/sessions/{session_id}/messages", response_model=List[Message])
-async def get_messages(
+async def list_session_messages(
     session_id: int,
-    current_user: UserModel = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 50,
+    current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    # Verify session belongs to user
-    session = db.query(SessionModel).filter(
-        SessionModel.id == session_id,
-        SessionModel.user_id == current_user.id
-    ).first()
+    session_repo = SessionRepository(db)
+    message_repo = MessageRepository(db)
     
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
-        )
-    
-    messages = db.query(MessageModel).filter(
-        MessageModel.session_id == session_id
-    ).order_by(MessageModel.created_at.asc()).all()
-    
-    return messages
+    session = session_repo.get(session_id)
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    return message_repo.get_session_messages(session_id, skip, limit)
 
-@router.delete("/sessions/{session_id}")
-async def delete_session(
+@router.post("/sessions/{session_id}/archive")
+async def archive_session(
     session_id: int,
-    current_user: UserModel = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    session = db.query(SessionModel).filter(
-        SessionModel.id == session_id,
-        SessionModel.user_id == current_user.id
-    ).first()
-    
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
-        )
-    
-    # Delete all messages in the session
-    db.query(MessageModel).filter(MessageModel.session_id == session_id).delete()
-    
-    # Delete the session
-    db.delete(session)
-    db.commit()
-    
-    return {"status": "success", "message": "Session deleted"}
+    session_repo = SessionRepository(db)
+    session = session_repo.get(session_id)
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    session_repo.archive_session(session_id)
+    return {"status": "success"}

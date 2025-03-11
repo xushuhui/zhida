@@ -1,29 +1,12 @@
+from typing import Optional, List
 from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
 
-class MessageBase(BaseModel):
-    content: str
-    role: str = "user"
-
-class MessageCreate(MessageBase):
-    pass
-
-class Message(MessageBase):
-    id: int
-    session_id: int
-    user_id: int
-    tokens: Optional[int] = None
-    status: str
-    created_at: datetime
-    response_time: Optional[float] = None
-    metadata: Optional[dict] = None
-
-    class Config:
-        from_attributes = True
-
 class SessionBase(BaseModel):
-    title: Optional[str] = None
+    title: str
+    system_prompt: Optional[str] = None
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
 
 class SessionCreate(SessionBase):
     pass
@@ -33,16 +16,42 @@ class Session(SessionBase):
     user_id: int
     status: str
     message_count: int
-    last_message_time: Optional[datetime] = None
+    last_message_time: Optional[datetime]
     created_at: datetime
     updated_at: datetime
-    context: Optional[dict] = None
-    messages: List[Message] = []
 
     class Config:
-        from_attributes = True
+        orm_mode = True
+
+class MessageBase(BaseModel):
+    content: str
+    role: str
+
+class MessageCreate(MessageBase):
+    pass
+
+class Message(MessageBase):
+    id: int
+    session_id: int
+    user_id: int
+    tokens: Optional[int]
+    status: str
+    created_at: datetime
+    response_time: Optional[int]
+    client_info: Optional[str]
+    ip_address: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: Optional[int] = None
+    system_prompt: Optional[str] = None
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
 
 class ChatResponse(BaseModel):
-    response: str
     session_id: int
-    messages: List[Message]
+    message: Message
+    total_tokens: Optional[int]

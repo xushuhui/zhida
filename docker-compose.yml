@@ -17,9 +17,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    command: --default-authentication-plugin=mysql_native_password
 
   redis:
-    image: redis:7.0-alpine
+    image: redis:6.2-alpine
     ports:
       - "6379:6379"
     volumes:
@@ -29,6 +30,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    command: redis-server --appendonly yes
 
   backend:
     build:
@@ -42,6 +44,12 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE:-zhida_db}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=c2user
+      - DB_PASSWORD=c2password
+      - DB_NAME=c2
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     ports:
       - "8000:8000"
     depends_on:
